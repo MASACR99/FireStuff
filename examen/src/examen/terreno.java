@@ -83,6 +83,6 @@ public class terreno extends inmueble{
 
     @Override
     public String toString() {
-        return "terreno{" + "cali=" + cali + '}';
+        return super.toString()+ " calificacion: "+ this.getCalificacion() + " precio compra-venta: "+this.precioCompraventa();
     }
 }

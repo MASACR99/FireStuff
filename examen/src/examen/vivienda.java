@@ -104,6 +104,9 @@ public class vivienda extends inmueble{
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
     }
-    
-    
+
+    @Override
+    public String toString() {
+        return super.toString() + "vivienda{" + "habitaciones=" + habitaciones + ", descripcion=" + descripcion + '}' + " precio compra-venta: " + "Precio compra-venta: " + this.precioCompraventa();
+    }
 }
