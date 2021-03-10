@@ -9,7 +9,8 @@ package examen;
  *
  * @author masa
  */
-public class inmueble {
+public abstract class inmueble {
+    private static int last_id = 0;
     private int metros2;    //Metros cuadrados del inmueble
     private int precio;     //Precio del inmueble
     private String poblacion; //Ubicacion del inmueble
@@ -26,7 +27,7 @@ public class inmueble {
         this.metros2 = metros2;
         this.setPrecio(precio); //se usa setPrecio con el objetivo de evitr repetir el check
         this.poblacion = poblacion;
-        //id = last_id + 1;
+        this.setId(++last_id);
     }
     
     /**
@@ -74,9 +75,20 @@ public class inmueble {
         return id;
     }
 
+    /**
+     * Pone el valor automáticamente a id, usando el valor anterior
+     */
+    public void setAutoId(){
+        this.setId(++last_id);
+    }
+    
     public void setId(int id) {
         this.id = id;
     }
+    
+    public abstract inmueble solicitarDatos();
+    
+    public abstract float precioCompraventa();
 
     @Override
     public String toString() {
