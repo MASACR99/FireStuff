@@ -90,6 +90,10 @@ public abstract class inmueble {
     
     public abstract float precioCompraventa();
 
+    /**
+     * Devuelve el string con todas las variables locales
+     * @return 
+     */
     @Override
     public String toString() {
         return "inmueble{" + "metros2=" + metros2 + ", precio=" + precio + ", poblacion=" + poblacion + ", id=" + id + '}';

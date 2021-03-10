@@ -105,6 +105,10 @@ public class vivienda extends inmueble{
         this.descripcion = descripcion;
     }
 
+    /**
+     * Devuelve todos los datos de la vivienda + los datos del inmueble + el precio compra-venta
+     * @return 
+     */
     @Override
     public String toString() {
         return super.toString() + "vivienda{" + "habitaciones=" + habitaciones + ", descripcion=" + descripcion + '}' + " precio compra-venta: " + "Precio compra-venta: " + this.precioCompraventa();

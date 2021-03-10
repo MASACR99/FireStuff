@@ -13,10 +13,10 @@ import java.util.Scanner;
  */
 public class terreno extends inmueble{
     
-    public enum Calificacion {
+    public enum Calificacion { //Enum para tener control sobre las calificaciones
         Rústico, Urbano, Urbanizable
     }
-    Calificacion cali;
+    Calificacion cali; //Calificacion del terreno
     
     public terreno() {
     }
@@ -81,6 +81,10 @@ public class terreno extends inmueble{
         this.cali = clase;
     }
 
+    /**
+     * Devuelve un string con todos los datos del terreno + el inmueble y el precio compra-venta
+     * @return 
+     */
     @Override
     public String toString() {
         return super.toString()+ " calificacion: "+ this.getCalificacion() + " precio compra-venta: "+this.precioCompraventa();
