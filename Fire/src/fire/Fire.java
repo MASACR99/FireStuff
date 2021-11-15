@@ -18,7 +18,7 @@ import javax.swing.WindowConstants;
 public class Fire extends JFrame{
 
     public static final int MAXTEMPERATURE = 256;
-    private final static int MAXFPS = 60;
+    public static int MAXFPS = 120;
     
     public Fire(String uwu){
         super(uwu);
@@ -27,7 +27,7 @@ public class Fire extends JFrame{
         ScreenManager man = new ScreenManager();
         this.setLayout(new BorderLayout());
         
-        this.setSize(500,500);
+        this.setSize(1000,1000);
         this.add(man);
         this.setIconImage(new ImageIcon("/home/masa/Downloads/index.png").getImage());
         this.setVisible(true);
@@ -40,6 +40,7 @@ public class Fire extends JFrame{
             while(time2-time1 < mspf){
                 time2 = System.currentTimeMillis();
             }
+            mspf = 1000/MAXFPS;
             man.paint(this.getGraphics());
             time2 = System.currentTimeMillis();
         }
