@@ -24,9 +24,12 @@ public class FireSim extends BufferedImage implements Runnable {
     private float delta = 0.1f; //Ammount of heat lost each exchange
     private float divVal = 2f; //Division value
     private float wind = 0f; //Bias to the divVal to simulate wind
+    private int maxFPS = 120;
+    private float mspf = 1000/maxFPS;
     private int[][] temps;
     private float[][] weights = new float[3][2]; //Weights of pixels for each calculation
     private FireColor color;
+    private boolean run = true;
     
     public FireSim(int width, int height, FireColor color){
         //Call buffered Image constructor with empty values
@@ -47,6 +50,122 @@ public class FireSim extends BufferedImage implements Runnable {
         weights[0][1] = 0.3f;
         weights[1][1] = 0.5f;
         weights[2][1] = 0.3f;
+    }
+    
+    public FireSim resize(int x, int y){
+        FireSim resized = new FireSim(x,y,color);
+        int minX = x < temps.length ? x : temps.length;
+        int minY = y < temps[0].length ? y : temps[0].length;
+        for(int i = 0; i<minX;i++){
+            for(int j = 0; j<minY;j++){
+                resized.setCoord(i,j,temps[i][j]);
+            }
+        }
+        resized.setDelta(delta);
+        resized.setMaxCold(maxCold);
+        resized.setMaxFuel(maxFuel);
+        resized.setDivVal(divVal);
+        resized.setWeights(weights);
+        resized.setFPS(maxFPS);
+        return resized;
+    }
+
+    //Keeping run and simulate separated gives me the ability to choose between threaded and non-threaded exections.
+    @Override
+    public void run() {
+        long time1 = 0;
+        long time2 = 0;
+        while (true){
+            time1 = System.currentTimeMillis();
+            while(time2-time1 < mspf){
+                time2 = System.currentTimeMillis();
+            }
+            time2 = System.currentTimeMillis();
+            if(run){
+                simulate();
+            }
+        }        
+    }
+
+    public void setFuelBoundsMin(int fuelBoundsMin) {
+        this.fuelBoundsMin = fuelBoundsMin;
+    }
+
+    public void setMaxFuel(int maxFuel) {
+        this.maxFuel = maxFuel;
+    }
+
+    public void setColdSpotBounds(int coldSpotBounds) {
+        this.coldSpotBounds = coldSpotBounds;
+    }
+
+    public void setMaxCold(int maxCold) {
+        this.maxCold = maxCold;
+    }
+    
+    public void setDelta(float delta){
+        this.delta = delta;
+    }
+
+    public int getMaxFuel() {
+        return maxFuel;
+    }
+
+    public int getMaxCold() {
+        return maxCold;
+    }
+
+    public float getDelta() {
+        return delta;
+    }
+
+    public void setCoord(int i, int j, int val) {
+        temps[i][j] = val;
+    }
+
+    public float getDivVal() {
+        return divVal;
+    }
+
+    public void setDivVal(float divVal) {
+        this.divVal = divVal;
+    }
+
+    public float[][] getWeights() {
+        return weights;
+    }
+
+    public void setWeights(float[][] weights) {
+        this.weights = weights;
+    }
+    
+    public void updateWind(float wind){
+        this.wind = wind;
+        weights[0][0] = 0.2f + wind;
+        weights[0][1] = 0.3f + wind;
+        weights[2][0] = 0.2f - wind;
+        weights[2][1] = 0.3f - wind;
+    }
+    
+    public float getWind(){
+        return this.wind;
+    }
+    
+    public int getFPS(){
+        return this.maxFPS;
+    }
+    
+    public void setFPS(int fps){
+        this.maxFPS = fps;
+        mspf = 1000/maxFPS;
+    }
+    
+    public void pause(){
+        run = false;
+    }
+    
+    public void start(){
+        run = true;
     }
     
     /**
@@ -141,90 +260,4 @@ public class FireSim extends BufferedImage implements Runnable {
             System.out.println("Error putting a pixel on it's place");
         }
     }
-    
-    public FireSim resize(int x, int y){
-        FireSim resized = new FireSim(x,y,color);
-        int minX = x < temps.length ? x : temps.length;
-        int minY = y < temps[0].length ? y : temps[0].length;
-        for(int i = 0; i<minX;i++){
-            for(int j = 0; j<minY;j++){
-                resized.setCoord(i,j,temps[i][j]);
-            }
-        }
-        resized.setDelta(delta);
-        resized.setMaxCold(maxCold);
-        resized.setMaxFuel(maxFuel);
-        return resized;
-    }
-
-    //Keeping run and simulate separated gives me the ability to choose between threaded and non-threaded exections.
-    @Override
-    public void run() {
-        simulate();
-    }
-
-    public void setFuelBoundsMin(int fuelBoundsMin) {
-        this.fuelBoundsMin = fuelBoundsMin;
-    }
-
-    public void setMaxFuel(int maxFuel) {
-        this.maxFuel = maxFuel;
-    }
-
-    public void setColdSpotBounds(int coldSpotBounds) {
-        this.coldSpotBounds = coldSpotBounds;
-    }
-
-    public void setMaxCold(int maxCold) {
-        this.maxCold = maxCold;
-    }
-    
-    public void setDelta(float delta){
-        this.delta = delta;
-    }
-
-    public int getMaxFuel() {
-        return maxFuel;
-    }
-
-    public int getMaxCold() {
-        return maxCold;
-    }
-
-    public float getDelta() {
-        return delta;
-    }
-
-    public void setCoord(int i, int j, int val) {
-        temps[i][j] = val;
-    }
-
-    public float getDivVal() {
-        return divVal;
-    }
-
-    public void setDivVal(float divVal) {
-        this.divVal = divVal;
-    }
-
-    public float[][] getWeights() {
-        return weights;
-    }
-
-    public void setWeights(float[][] weights) {
-        this.weights = weights;
-    }
-    
-    public void updateWind(float wind){
-        this.wind = wind;
-        weights[0][0] = 0.2f + wind;
-        weights[0][1] = 0.3f + wind;
-        weights[2][0] = 0.2f - wind;
-        weights[2][1] = 0.3f - wind;
-    }
-    
-    public float getWind(){
-        return this.wind;
-    }
-    
 }

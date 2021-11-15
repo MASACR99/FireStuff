@@ -7,6 +7,10 @@ package fire;
 
 import static fire.Fire.MAXTEMPERATURE;
 import java.awt.Color;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * TODO: Change color to receive any given amount via parameters (addColor()), keep in mind if there's no colors or there's no start/end point defaults shall be used.
@@ -16,59 +20,98 @@ public class FireColor {
     
     private Color[] colors = new Color[MAXTEMPERATURE];
     //Default colors
+    private Map<Integer, Color> preMadeColors = new HashMap<Integer,Color>();
     private final Color STARTCOLOR = new Color(255,255,255,255);
-    private final Color ENDCOLORWHITE = new Color(255,255,255,0); //White background
-    private final Color ENDCOLORBLACK = new Color(0,0,0,255); //Black background
+    private final Color ENDCOLOR = new Color(255,255,255,0);
     private final Color MIDCOLOR = new Color(255,76,10,255);
-    private final Color LOWMIDCOLORBLACK = new Color(255,231,67,255); //Black background (smoke will be white)
-    private final Color LOWMIDCOLORWHITE = new Color(0,0,0,125); //White background (smoke will be black)
+    private final Color LOWMIDCOLOR = new Color(0,0,0,125); //White background (smoke will be black)
     private final Color HIGHMIDCOLOR = new Color(210,99,1,128);
-    private boolean background = false; //true when background is black
     
     public FireColor(){
-        if(background){
-            colors[0] = ENDCOLORBLACK;
-            colors[(int)(MAXTEMPERATURE/3)] = LOWMIDCOLORBLACK;
-        }else{
-            colors[0] = ENDCOLORWHITE;
-            colors[(int)(MAXTEMPERATURE/3)] = LOWMIDCOLORWHITE;
-        }
-        colors[MAXTEMPERATURE-1] = STARTCOLOR;
-        colors[(int)(MAXTEMPERATURE/2)] = MIDCOLOR;
-        colors[(int)(MAXTEMPERATURE*2/3)] = HIGHMIDCOLOR;
+        preMadeColors.put(0,ENDCOLOR);
+        preMadeColors.put((int)MAXTEMPERATURE/3,LOWMIDCOLOR);
+        preMadeColors.put((int)MAXTEMPERATURE/2,MIDCOLOR);
+        preMadeColors.put((int)MAXTEMPERATURE*2/3,HIGHMIDCOLOR);
+        preMadeColors.put(MAXTEMPERATURE-1,STARTCOLOR);
     }
     
+    /**
+     * Puts a new value into the premade values, it can overwrite other values
+     * @param position
+     * @param color 
+     */
     public void insert(int position, Color color){
+        //First insert color
         if(position < MAXTEMPERATURE && position >= 0){
-            colors[position] = color;
+            preMadeColors.put(position, color);
         }
+        interpolate();
     }
     
-    public void changeBackground(){
-        colors = new Color[MAXTEMPERATURE];
-        background = !background;
-        if(background){
-            colors[0] = ENDCOLORBLACK;
-            colors[(int)(MAXTEMPERATURE/3)] = LOWMIDCOLORBLACK;
-        }else{
-            colors[0] = ENDCOLORWHITE;
-            colors[(int)(MAXTEMPERATURE/3)] = LOWMIDCOLORWHITE;
+    public void deletePresetColor(int position){
+        if(preMadeColors.containsKey(position) && position != 0 && position != MAXTEMPERATURE - 1){
+            preMadeColors.remove(position);
         }
-        colors[MAXTEMPERATURE-1] = STARTCOLOR;
-        colors[(int)(MAXTEMPERATURE/2)] = MIDCOLOR;
-        colors[(int)(MAXTEMPERATURE*2/3)] = HIGHMIDCOLOR;
         interpolate();
+    }
+    
+    public Object[][] getPresetColorData(){
+        Object[][] returnVals = new Object[preMadeColors.size()][2];
+        int count = 0;
+        //Get the values in an ordered manner
+        SortedSet<Integer> keys = new TreeSet<>(preMadeColors.keySet());
+        for(Integer key : keys){
+            returnVals[count][0] = key;
+            returnVals[count][1] = preMadeColors.get(key).getAlpha() + "," + preMadeColors.get(key).getRed() + ", " + preMadeColors.get(key).getGreen() + ", " + preMadeColors.get(key).getBlue();
+            count++;
+        }
+        return returnVals;
     }
     
     /**
      * Will calculate all the values of color doing a smooth effect for each temperature.
      */
     public void interpolate(){
+        int[] starts = new int[preMadeColors.size()-1];
+        int[] ends = new int[preMadeColors.size()-1];
+        //Clear all colors
+        for(int i=0;i<MAXTEMPERATURE;i++){
+            colors[i] = null;
+        }
+        int counter = 0;
+        //Place all values
+        SortedSet<Integer> keys = new TreeSet<>(preMadeColors.keySet());
+        for(Integer key : keys){
+            colors[key] = preMadeColors.get(key);
+            if(counter == 0){
+                starts[counter] = key;
+            }else if(counter == preMadeColors.size() - 1){
+                ends[counter - 1] = key;
+            }else{
+                starts[counter] = key;
+                ends[counter - 1] = key;
+            }
+            counter++;
+        }
         //Get the positions to calculate between
-        int[] starts = {0,(int)(MAXTEMPERATURE/3),(int)(MAXTEMPERATURE/2),(int)(MAXTEMPERATURE*2/3)};
-        int[] ends = {(int)(MAXTEMPERATURE/3),(int)(MAXTEMPERATURE/2),(int)(MAXTEMPERATURE*2/3),MAXTEMPERATURE-1};
         for(int i = 0; i < starts.length; i++){
             interpolateBetween(starts[i],ends[i]);
+        }
+    }
+    
+    /**
+     * Returns the color corresponding to the temperature X
+     * @param x
+     * @return
+     * @throws Exception 
+     */
+    public int getARGB(int x) throws Exception{
+        if(x < 0 || x >= colors.length){
+            throw new Exception("Out of bounds");
+        }else{
+            int returner = 0;
+            returner = colors[x].getAlpha() << 24 | colors[x].getRed() << 16 | colors[x].getGreen() << 8 | colors[x].getBlue();
+            return returner;
         }
     }
     
@@ -111,22 +154,4 @@ public class FireColor {
             }
         }
     }
-    
-    
-    /**
-     * Returns the color corresponding to the temperature X
-     * @param x
-     * @return
-     * @throws Exception 
-     */
-    public int getARGB(int x) throws Exception{
-        if(x < 0 || x >= colors.length){
-            throw new Exception("Out of bounds");
-        }else{
-            int returner = 0;
-            returner = colors[x].getAlpha() << 24 | colors[x].getRed() << 16 | colors[x].getGreen() << 8 | colors[x].getBlue();
-            return returner;
-        }
-    }
-    
 }
